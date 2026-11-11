@@ -155,6 +155,11 @@ body.locked #gate{display:grid}
 #gate .err{color:var(--mango);min-height:1.4em}
 #updated{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:20;font:600 14px/1 var(--body);color:var(--ink);background:var(--sky);border:0;border-radius:999px;padding:12px 18px;cursor:pointer}
 #forget{background:none;border:0;padding:0;font:inherit;color:var(--muted);text-decoration:underline;cursor:pointer}
+#gate .keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;justify-content:center}
+#gate .keypad button{height:72px;border-radius:50%;width:72px;font:600 26px/1 var(--display);letter-spacing:0;text-transform:none;color:var(--text);background:var(--raised);border:1px solid var(--line);padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#gate .keypad button:active{background:var(--line)}
+#gate .keypad button[data-k=del]{font-size:22px;background:transparent;border-color:transparent;color:var(--muted)}
+#gate .keypad button:disabled{opacity:.4}
 </style>
 
 </head>
@@ -165,9 +170,15 @@ body.locked #gate{display:grid}
     <h1>Production Guide</h1>
     <p>Enter the team PIN.</p>
     <label class="pin" id="pin">
-      <input id="gateCode" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="4-digit PIN" autofocus>
+      <input id="gateCode" type="password" inputmode="none" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="4-digit PIN" autofocus>
       <span></span><span></span><span></span><span></span>
     </label>
+    <div class="keypad" id="keypad">
+      <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+      <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+      <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+      <span></span><button type="button">0</button><button type="button" data-k="del" aria-label="Delete">&#9003;</button>
+    </div>
     <button id="gateBtn" type="submit" hidden>Open the guide</button>
     <p class="err" id="gateErr" role="alert"></p>
   </form>
@@ -395,7 +406,7 @@ var GUIDE_API = 'https://script.google.com/macros/s/AKfycbxXKUJSU-I9QC2PFKcBnEPC
   // PIN boxes: one hidden numeric input under four boxes; submits on the 4th digit.
   var pin=document.getElementById('pin'), boxes=pin.querySelectorAll('span');
   function paint(){
-    var n=input.value.length, focused=document.activeElement===input;
+    var n=input.value.length, focused=!btn.disabled;
     [].forEach.call(boxes,function(b,i){b.classList.toggle('on',i<n); b.classList.toggle('cur',focused&&i===Math.min(n,3))});
   }
   function fail(msg){
@@ -415,6 +426,12 @@ var GUIDE_API = 'https://script.google.com/macros/s/AKfycbxXKUJSU-I9QC2PFKcBnEPC
       put('fs:code',c); put('fs:pages',JSON.stringify(d)); open(d);
     }).catch(function(){ fail("Couldn't reach the guide. Check your connection and try again.") });
   }
+  // On-screen keypad, so nobody needs the phone keyboard. A real keyboard still works.
+  document.getElementById('keypad').addEventListener('click',function(e){
+    var k=e.target.closest('button'); if(!k||btn.disabled) return;
+    input.value = k.dataset.k==='del' ? input.value.slice(0,-1) : (input.value+k.textContent).slice(0,4);
+    input.dispatchEvent(new Event('input'));
+  });
   form.addEventListener('submit',function(e){ e.preventDefault(); submit() });
   paint();
 })();
