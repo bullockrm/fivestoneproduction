@@ -15,3 +15,4 @@ In the Apps Script editor: **Project Settings** (gear) > **Script Properties** >
 ## Files
 
 - `index.html`: the whole site. Near the bottom, `GUIDE_API` is the Apps Script web app URL.
+- `favicon.png` (browser tab icon) and `apple-touch-icon.png` (iPhone home-screen icon). To change either, upload a new square PNG with the same name (Add file > Upload files).
